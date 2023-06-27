@@ -1,0 +1,96 @@
+scrape_configs:
+  - job_name: monsrv.host
+    scrape_interval: 5s
+    static_configs:
+    - targets: ['monsrv:9100']
+
+  - job_name: Mysql-metrics-mon
+    scrape_interval: 5m
+    scrape_timeout: 5m
+    static_configs:
+    - targets: ['monsrv:9104']
+
+  - job_name: srv-1.host
+    scrape_interval: 5s
+    static_configs:
+    - targets: ['srv-1:9100']
+
+  - job_name: srv-2.host
+    scrape_interval: 5s
+    static_configs:
+    - targets: ['srv-2:9100']
+
+#  - job_name: srv-1.nginx
+#    scrape_interval: 10s
+#    metrics_path: '/metric'
+#    static_configs:
+#    - targets: ['srv-1:9113']
+
+#  - job_name: srv-2.nginx
+#    scrape_interval: 10s
+#    metrics_path: '/metric'
+#    static_configs:
+#    - targets: ['srv-2:9113']
+
+
+#  - job_name: MYSQL-DB0
+#    scrape_interval: 5s
+#    static_configs:
+#    - targets: ['MySQL-8894-member-0:9100']
+
+#  - job_name: MYSQL-DB0.mysql
+#    scrape_interval: 5m
+#    scrape_timeout: 5m
+#    static_configs:
+#    - targets: ['10.0.1.6:9104']
+
+#  - job_name: MYSQL-DB1
+#    scrape_interval: 5s
+#    static_configs:
+#    - targets: ['MySQL-8894-member-1:9100']
+
+#  - job_name: MYSQL-DB1.mysql
+#    scrape_interval: 5m
+#    scrape_timeout: 5m
+#    static_configs:
+#    - targets: ['10.0.1.13:9104']
+
+#  - job_name: MYSQL-DB2
+#    scrape_interval: 5s
+#    static_configs:
+#    - targets: ['MySQL-8894-member-2:9100']
+
+#  - job_name: MYSQL-DB2.mysql
+#    scrape_interval: 5m
+#    scrape_timeout: 5m
+#    static_configs:
+#    - targets: ['10.0.1.36:9104'] 
+
+  - job_name: 'blackbox'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+        - http://gbfinaltest.site
+        - http://gbfinaltest.site:8080/
+        - http://gbfinaltest.site/admin
+        - http://gbfinaltest.site:3000/
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox:9115
+
+rule_files:
+  - 'alert.rules'
+
+alerting:
+  alertmanagers:
+  - scheme: http
+    static_configs:
+    - targets:
+      - "alertmanager:${ALERT_MANAGER_PORT}"
+
